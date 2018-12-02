@@ -1,15 +1,11 @@
 import React, { Component } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import axios from 'axios';
-import { Header, Card, CardSection, Input, Button} from './common';
+import { Header, Card, CardSection, Input, Button, Spinner} from './common';
 
 class LoginForm extends Component {
 
-    state = {userName:'', password:''};
-    
-    componentWillReceiveProps(nextProps) {
-
-    }
+    state = {userName:'', password:'', isLoading:false, showError:false};
 
     onUserNameTextChanged(input) {
         this.setState({...this.state, userName:input});
@@ -20,15 +16,53 @@ class LoginForm extends Component {
     }
 
     login() {
+        this.setState({...this.state, isLoading:true});
+
         const dict = {
             userName: this.state.userName,
             password: this.state.password
         }
         axios.post('https://stormy-brook-52236.herokuapp.com/api/login',dict).then(res => {
-            debugger;
             this.props.onLogin(res.data);
-            
+            this.setState({...this.state, isLoading:false});
+
+            if (res.data.status === false) {
+                this.setState({...this.state, showError:true});
+            } else {
+                this.setState({...this.state, showError:false});
+            }
         });
+    }
+
+    renderButton() {
+        if (this.state.isLoading) {
+            return(
+                <Spinner />
+            );
+        } else {
+            return(
+                <Button 
+                style={{borderColor:'green'}} 
+                onPress={(btn)=> {
+                    this.login();
+                }}
+                styleForText={{color:'green'}}
+                > 
+                LOGIN 
+                </Button>
+            );
+        }
+    }
+
+    showError() {
+
+        if (this.state.showError) {
+            return(
+                <View style={{flex:0, alignItems:'center',justifyContent:'center', paddingTop:10}}>
+                    <Text style={{height:40, color:'red' }}>Invalid username or password</Text>
+                </View>
+            );    
+        }
     }
     render() {
         return (
@@ -56,17 +90,10 @@ class LoginForm extends Component {
                             />
                         </CardSection>
                         <CardSection>
-                            <Button 
-                                style={{borderColor:'green'}} 
-                                onPress={()=> {
-                                    console.log(this.state);
-                                    this.login();
-
-                                }}
-                                styleForText={{color:'green'}}
-                            > LOGIN </Button>
+                            {this.renderButton()}
                         </CardSection>
                     </Card>
+                    {this.showError()}
                 </View>
             </View>
         );

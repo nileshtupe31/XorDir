@@ -17,8 +17,7 @@ const Styles = {
         justifyContent:'center',
         shadowColor:'#000',
         shadowOpacity:0.6,
-        shadowOffset:{width:0,height:1},
-        elevation:2
+        shadowOffset:{width:0,height:1}
     }
 }
 

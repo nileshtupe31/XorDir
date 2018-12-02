@@ -6,9 +6,8 @@ import UserDetailForm from "./src/components/UserDetailForm"
 
 export default class App extends Component {
 
-    state = {'userLoggedIn': false};
+    state = {'userLoggedIn': true};
     onLogin(data) {
-        debugger;
         console.log(data);
         this.setState({...this.state, 'userLoggedIn': data.status});
         
