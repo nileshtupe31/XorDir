@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import { Text, View, SectionList } from 'react-native'
 import axios from "axios";
 import ItemCellView from "./ItemCellView";
-import {  Header, Spinner } from "./common";
+import { Spinner } from "./common";
+import { HOSTURL, HIERARCHYKEY } from "../res/constant";
 
 
 class UserDetailForm extends Component {
@@ -20,7 +21,8 @@ class UserDetailForm extends Component {
     }
 
     fetchEmployeeHierarchy(empId) {
-        axios.get('https://stormy-brook-52236.herokuapp.com/api/getEmployeeHierarchy?empId='+empId).then((res) => {
+        const url = HOSTURL + HIERARCHYKEY + '?empId=' + empId
+        axios.get(url).then((res) => {
             let data = res.data;
             this.setState({...this.state,isFetching:false, tableData:data});
         });
