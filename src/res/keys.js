@@ -1,0 +1,1 @@
+export const LOGINCREDS = 'login_creds';

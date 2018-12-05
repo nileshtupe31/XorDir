@@ -34,7 +34,6 @@ class UserDetailForm extends Component {
     render() {
         return(
             <View style={{flex:1}}>
-                <Header style={{backgroundColor:'#999'}}>Hierarchy</Header>
                 {this.renderDetails()}
             </View>
         );

@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, AsyncStorage } from 'react-native';
 import axios from 'axios';
-import { Header, Card, CardSection, Input, Button, Spinner} from './common';
+import { Actions } from "react-native-router-flux";
+import { Card, CardSection, Input, Button, Spinner} from './common';
+
+import { HOSTURL, LOGINKEY } from "../res/constant";
+import { LOGINCREDS } from "../res/keys";
 
 class LoginForm extends Component {
 
@@ -15,6 +19,18 @@ class LoginForm extends Component {
         this.setState({...this.state, password:input});
     }
 
+    componentWillMount() {
+
+        AsyncStorage.getItem(LOGINCREDS).then(result => {
+                if (result !== null) {
+                    const dict = JSON.parse(result);
+                    this.setState({...this.state, userName:dict['userName'], password:dict['password'] });
+                    this.login();        
+                }
+            }
+        );
+    }
+
     login() {
         this.setState({...this.state, isLoading:true});
 
@@ -22,15 +38,24 @@ class LoginForm extends Component {
             userName: this.state.userName,
             password: this.state.password
         }
-        axios.post('https://stormy-brook-52236.herokuapp.com/api/login',dict).then(res => {
-            this.props.onLogin(res.data);
+
+        const loginURL = HOSTURL + LOGINKEY
+        axios.post(loginURL,dict).then(res => {
             this.setState({...this.state, isLoading:false});
 
             if (res.data.status === false) {
                 this.setState({...this.state, showError:true});
             } else {
                 this.setState({...this.state, showError:false});
+                Actions.hierarchy();
+                AsyncStorage.setItem(LOGINCREDS,JSON.stringify(dict));
             }
+        }).catch(error => {
+            debugger;
+            console.log(error);
+            this.setState({...this.state, showError:true, isLoading:false});
+
+            
         });
     }
 
@@ -67,10 +92,7 @@ class LoginForm extends Component {
     render() {
         return (
             <View style={styles.container}>
-                <Header style={{backgroundColor:'#999'}}>
-                LOGIN
-                </Header>
-                
+ 
                 <View style={[styles.loginContainer]}>
                     <Card>
                         <CardSection>
@@ -78,7 +100,7 @@ class LoginForm extends Component {
                             label='User Name' 
                             placeholder='Enter user name' 
                             onChangeText={this.onUserNameTextChanged.bind(this)}
-
+                            text={this.state.userName}
                             />
                         </CardSection>
                         <CardSection>
@@ -87,6 +109,7 @@ class LoginForm extends Component {
                             placeholder='Enter password' 
                             secureTextEntry
                             onChangeText={this.onPasswordTextChanged.bind(this)}
+                            text={this.state.password}
                             />
                         </CardSection>
                         <CardSection>
