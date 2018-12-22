@@ -8,7 +8,7 @@ export default AppRouter = () => {
         <Router>
             <Stack key="root">
                 <Scene key="login" component={LoginForm} title="Login"/>
-                <Scene key="hierarchy" component={UserDetailForm} title="Hierarchy"/>
+                <Scene key="hierarchy" component={UserDetailForm} title="Hierarchy" />
             </Stack>
       </Router>    
     );

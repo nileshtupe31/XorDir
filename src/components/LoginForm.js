@@ -1,79 +1,48 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, Text, AsyncStorage } from 'react-native';
-import axios from 'axios';
-import { Actions } from "react-native-router-flux";
-import { Card, CardSection, Input, Button, Spinner} from './common';
+import { connect } from "react-redux";
 
-import { HOSTURL, LOGINKEY } from "../res/constant";
-import { LOGINCREDS } from "../res/keys";
+import { 
+    userNameChanged, 
+    passwordChanged,
+    login,
+    savedUser 
+} from "../Actions";
+import { Card, CardSection, Input, Button, Spinner} from './common';
 
 class LoginForm extends Component {
 
-    state = {userName:'', password:'', isLoading:false, showError:false};
-
     onUserNameTextChanged(input) {
-        this.setState({...this.state, userName:input});
+        this.props.userNameChanged(input);
     }
 
     onPasswordTextChanged(input) {
-        this.setState({...this.state, password:input});
+        this.props.passwordChanged(input);
     }
 
     componentWillMount() {
-
-        AsyncStorage.getItem(LOGINCREDS).then(result => {
-                if (result !== null) {
-                    const dict = JSON.parse(result);
-                    this.setState({...this.state, userName:dict['userName'], password:dict['password'] });
-                    this.login();        
-                }
-            }
-        );
+        this.props.savedUser()
     }
 
     login() {
-        this.setState({...this.state, isLoading:true});
-
-        const dict = {
-            userName: this.state.userName,
-            password: this.state.password
-        }
-
-        const loginURL = HOSTURL + LOGINKEY
-        axios.post(loginURL,dict).then(res => {
-            this.setState({...this.state, isLoading:false});
-
-            if (res.data.status === false) {
-                this.setState({...this.state, showError:true});
-            } else {
-                this.setState({...this.state, showError:false});
-                Actions.hierarchy();
-                AsyncStorage.setItem(LOGINCREDS,JSON.stringify(dict));
-            }
-        }).catch(error => {
-            debugger;
-            console.log(error);
-            this.setState({...this.state, showError:true, isLoading:false});
-
-            
-        });
+        this.props.login(this.props.userName, this.props.password);
     }
-
+    
     renderButton() {
-        if (this.state.isLoading) {
+        if (this.props.isLoading === true) {
             return(
                 <Spinner />
             );
         } else {
             return(
-                <Button 
-                style={{borderColor:'green'}} 
+                <Button
+                style={{borderColor:'green'}}
                 onPress={(btn)=> {
                     this.login();
                 }}
                 styleForText={{color:'green'}}
-                > 
-                LOGIN 
+                >
+                LOGIN
                 </Button>
             );
         }
@@ -81,35 +50,35 @@ class LoginForm extends Component {
 
     showError() {
 
-        if (this.state.showError) {
+        if (this.props.showError) {
             return(
                 <View style={{flex:0, alignItems:'center',justifyContent:'center', paddingTop:10}}>
                     <Text style={{height:40, color:'red' }}>Invalid username or password</Text>
                 </View>
-            );    
+            );
         }
     }
     render() {
         return (
             <View style={styles.container}>
- 
+
                 <View style={[styles.loginContainer]}>
                     <Card>
                         <CardSection>
-                            <Input 
-                            label='User Name' 
-                            placeholder='Enter user name' 
+                            <Input
+                            label='User Name'
+                            placeholder='Enter user name'
                             onChangeText={this.onUserNameTextChanged.bind(this)}
-                            text={this.state.userName}
+                            text={this.props.userName}
                             />
                         </CardSection>
                         <CardSection>
-                            <Input 
-                            label='Password' 
-                            placeholder='Enter password' 
-                            secureTextEntry
+                            <Input
+                            label='Password'
+                            placeholder='Enter password'
                             onChangeText={this.onPasswordTextChanged.bind(this)}
-                            text={this.state.password}
+                            text={this.props.password}
+                            secureTextEntry
                             />
                         </CardSection>
                         <CardSection>
@@ -123,7 +92,7 @@ class LoginForm extends Component {
     }
 }
 
-const styles = StyleSheet.create( 
+const styles = StyleSheet.create(
     {
         container: {
             flex:1
@@ -136,4 +105,20 @@ const styles = StyleSheet.create(
     }
 );
 
-export default LoginForm;
+const mapStateToProps = (state) => {
+    console.log(state);
+    
+    return ({
+        userName: state.auth.userName,
+        password: state.auth.password,
+        isLoading: state.auth.isloading,
+        showError: state.auth.showError    
+    });
+}
+
+export default connect(mapStateToProps, {
+    userNameChanged,
+    passwordChanged,
+    login,
+    savedUser
+})(LoginForm);

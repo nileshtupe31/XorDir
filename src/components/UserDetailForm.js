@@ -1,35 +1,19 @@
 import React, { Component } from "react";
 import { Text, View, SectionList } from 'react-native'
-import axios from "axios";
+import { connect } from "react-redux";
+
 import ItemCellView from "./ItemCellView";
 import { Spinner } from "./common";
-import { HOSTURL, HIERARCHYKEY } from "../res/constant";
+import { fetchHierarchy } from "../Actions";
 
 
 class UserDetailForm extends Component {
 
-    state = {isFetching: true, }
     componentWillMount() {
-        this.setState({...this.state, isFetching:true, tableData:{
-            name:'',
-            peers:[],
-            reports:[]
-        }});
-
-    this.fetchEmployeeHierarchy('ukamdar');
-        
-    }
-
-    fetchEmployeeHierarchy(empId) {
-        const url = HOSTURL + HIERARCHYKEY + '?empId=' + empId
-        axios.get(url).then((res) => {
-            let data = res.data;
-            this.setState({...this.state,isFetching:false, tableData:data});
-        });
+        this.props.fetchHierarchy('ntupe');
     }
 
     onCellItemPress(item, cellItem) {
-        debugger;
 
     }
 
@@ -42,13 +26,13 @@ class UserDetailForm extends Component {
     }
     renderDetails() {
 
-        if (this.state.isFetching) {
+        if (this.props.isloading === true) {
             return (
                 <Spinner />
             );
         } else {
 
-            const {name, peers, reports } = this.state.tableData;
+            const {name, peers, reports } = this.props.empData;
             return (
                 <SectionList
                 renderItem={({item, index, section}) => 
@@ -72,4 +56,15 @@ class UserDetailForm extends Component {
     }
 }
 
-export default UserDetailForm
+const mapStateToProps = (state) => {
+    console.log(state.employee.empData);
+    
+    return({
+        empData: state.employee.empData,
+        isloading: state.employee.isloading
+    });
+}
+
+export default connect(mapStateToProps,{
+    fetchHierarchy
+}) (UserDetailForm)
